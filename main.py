@@ -98,8 +98,23 @@ class app:
         self.note_text.delete(1.0, tk.END)
 
     def generate_flashcards(self):
-        self.ui.show_note_info("Flashcard generation will be implemented in a future update!")
+        content = self.note_text.get(1.0, tk.END).strip()
+        lines = content.split("\n")
+        flashcards = []
 
+        for line in lines:
+            if "-" in line:
+                parts = line.split("-", 1)
+                question = parts[0].strip()
+                answer = parts[1].strip()
+                if question and answer:
+                    flashcards.append((question, answer))
+
+        if flashcards:
+            self.ui.show_flashcards(flashcards)
+        else:
+            self.ui.show_note_info("No valid flashcards found!")
+ 
     def __del__(self):
         self.conn.close()
 
