@@ -111,7 +111,7 @@ class app:
                     flashcards.append((question, answer))
 
         if flashcards:
-            self.ui.show_flashcards(flashcards)
+            self.ui.start_flashcard_mode
         else:
             self.ui.show_note_info("No valid flashcards found!")
  

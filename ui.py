@@ -5,6 +5,9 @@ class UI:
     def __init__(self, master):
         self.master = master
         self.configure_styles()
+        self.flashcard_mode = False
+        self.flashcards = []
+        self.current_flashcard = None
 
     def configure_styles(self):
         style = ttk.Style()
@@ -69,7 +72,7 @@ class UI:
         clear_button = ttk.Button(button_frame, text="Clear Note")
         clear_button.pack(side=tk.LEFT, padx=(5, 0))
 
-        flashcard_button = ttk.Button(button_frame, text="Generate Flashcards")
+        flashcard_button = ttk.Button(button_frame, text="Generate Flashcards", command=self.start_flashcard_mode)
         flashcard_button.pack(side=tk.RIGHT)
 
         self.note_info = ttk.Label(note_frame, style="Info.TLabel", wraplength=400)
@@ -85,3 +88,38 @@ class UI:
     def show_note_info(self, message):
         self.note_info.config(text=message)
         self.master.after(3000, lambda: self.note_info.config(text=""))
+
+    def start_flashcard_mode(self):
+        self.flashcard_mode = True
+        self.flashcards = self.extract_flashcards()
+        self.show_next_flashcard()
+        self.master.bind("<Right>", self.know_flashcard)
+        self.master.bind("<Left>", self.dont_know_flashcard)
+
+    def extract_flashcards(self):
+        text = self.note_text.get(1.0, tk.END).strip()
+        flashcards = []
+        for line in text.split("\n"):
+            if " - " in line:
+                term, definition = line.split(" - ", 1)
+                flashcards.append((term.strip(), definition.strip()))
+        return flashcards
+
+    def show_next_flashcard(self):
+        if self.flashcards:
+            self.current_flashcard = self.flashcards.pop(0)
+            self.note_text.delete(1.0, tk.END)
+            self.note_text.insert(tk.END, self.current_flashcard[0])
+        else:
+            self.flashcard_mode = False
+            self.note_text.delete(1.0, tk.END)
+            self.note_text.insert(tk.END, "All flashcards completed!")
+            self.master.unbind("<Right>")
+            self.master.unbind("<Left>")
+
+    def know_flashcard(self, event):
+        self.show_next_flashcard()
+
+    def dont_know_flashcard(self, event):
+        self.flashcards.append(self.current_flashcard)
+        self.show_next_flashcard()
